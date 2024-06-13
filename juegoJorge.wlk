@@ -1,5 +1,9 @@
 object juego {
-  const alimentos = [new Alimento(position=game.at(3,2)), new Alimento(calorias = 10, position = game.at(1,1))]
+  const alimentos = [
+    new AlimentoEspecial(position=game.at(3,2),potencia = 2), 
+    new AlimentoEspecial(calorias = 10, potencia = 3, position = game.at(1,1)),
+    new AlimentoVeloz(calorias = 1, position = game.at(10,6)),
+    new AlimentoRebote(calorias = 1, position = game.at(10,4))]
   method iniciar(){
     
     game.width(13)
@@ -8,15 +12,16 @@ object juego {
     alimentos.forEach({a=>game.addVisual(a)})
     jorge.centrar()
     game.addVisualCharacter(jorge) 
-    game.onCollideDo(jorge, {a=>jorge.consumir(a)})
+    game.onCollideDo(jorge, {a=>a.esAgarradoPor(jorge)})
 
     game.start()
   }
 
   method agregarAlimento(){
     game.addVisual(
-      new Alimento(
+      new AlimentoEspecial(
         calorias = (0..10).anyOne(), 
+        potencia = 5,
         position = self.posicionAleatoria()))
   }
 
@@ -46,8 +51,6 @@ object jorge {
 
   method consumir(algo) {
     energia = energia + algo.consumo()
-    game.removeVisual(algo)
-    game.schedule(1000, {juego.agregarAlimento()})
     game.say(self,"tengo energia " + energia)
   }
 }
@@ -57,9 +60,53 @@ class Alimento {
   const calorias = 1
   var property position = game.origin()
 
-  method consumo() = calorias * 10
+  method consumo()
   
-  method text() = "SOY Alimento"
+  method esAgarradoPor(alguien){
+    alguien.consumir(self)
+    game.removeVisual(self)
+    game.schedule(1000, {juego.agregarAlimento()})
+  }
+
+  //method text() = "SOY Alimento"
   
-  method image() = "alimento.png"
+  method image() 
+}
+
+class AlimentoEspecial inherits Alimento {
+  var potencia
+  override method image() = "alimentoEspecial.png"
+
+  override method consumo() = calorias*10 + potencia
+
+  override method esAgarradoPor(alguien){
+    super(alguien)
+    game.say(jorge,"un alimento especial")
+
+  }
+  method aumentarPotencia(){
+    potencia = potencia * 2
+  }
+}
+
+
+class AlimentoVeloz inherits Alimento {
+  override method image() = "alimentoVeloz.png"
+  
+  override method consumo() = 100
+  override method esAgarradoPor(alguien){
+    game.onTick(500, "movimiento", {self.moverse()})
+  }
+  method moverse(){
+    position = position.left(1)
+  }
+}
+class AlimentoRebote inherits AlimentoVeloz {
+
+  override method moverse(){
+    super()    
+    if (position.x() == 0)
+       position = game.at(game.width()-1,position.y())
+  }
+
 }
