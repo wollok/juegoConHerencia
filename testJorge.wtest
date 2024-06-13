@@ -1,0 +1,12 @@
+import juegoJorge.*
+
+describe "consumos de jorge" {
+
+  const alimento1 = new Alimento()
+  const alimento2 = new Alimento(calorias =20)
+  test "jorge consume un alimento y gana energia" {
+    jorge.consumir(alimento1)
+    assert.equals(110, jorge.energia())
+  }
+
+}

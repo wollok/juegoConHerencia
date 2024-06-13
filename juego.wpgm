@@ -1,0 +1,5 @@
+import juegoJorge.*
+
+program programJuego {
+     juego.iniciar()
+}
